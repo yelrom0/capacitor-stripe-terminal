@@ -1,3 +1,9 @@
+<bold>
+  NOTE: This is a fork of the original capacitor-stripe-terminal plugin. It has will generally be slightly ahead of upstream as I add and test features that I use for work, this means it is less like to be stable!
+  If you want the original plugin, please use the upstream version:
+</bold>
+<a href=https://github.com/eventonehq/capacitor-stripe-terminal>Event One HQ Capacitor Stripe Terminal</a>
+
 <p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
 <h3 align="center">Capacitor Stripe Terminal</h3>
 <p align="center"><strong><code>capacitor-stripe-terminal</code></strong></p>
