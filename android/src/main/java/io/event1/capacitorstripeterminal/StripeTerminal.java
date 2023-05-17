@@ -1164,9 +1164,4 @@ public class StripeTerminal
     pendingReaderAutoReconnect = null;
     notifyListeners("didFailReaderReconnect", null);
   }
-
-  @Override
-  public void onStop() {
-    cancelDiscoverReaders();
-  }
 }
