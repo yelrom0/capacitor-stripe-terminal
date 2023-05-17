@@ -627,7 +627,7 @@ export interface PaymentIntent {
   /**
    * The payment method to be used in this `PaymentIntent`. Only valid in the intent returned during `collectPaymentMethod` when using the `updatePaymentIntent` option in the `CollectConfig`.
    */
-  paymentMethod: Stripe.PaymentMethod | null
+  paymentMethod: Stripe.PaymentMethod | string | null
 
   /**
    * Details about items included in the amount after confirmation.
@@ -798,6 +798,7 @@ export interface ListLocationsParameters {
 export interface SimulatorConfiguration {
   availableReaderUpdate?: SimulateReaderUpdate
   simulatedCard?: SimulatedCardType
+  simulatedTipAmount?: number
 }
 
 /**
@@ -977,6 +978,8 @@ export interface StripeTerminalInterface {
   checkPermissions(): Promise<PermissionStatus>
   requestPermissions(): Promise<PermissionStatus>
 
+  tapToPaySupported(): Promise<boolean>
+
   addListener(
     eventName: 'requestConnectionToken',
     listenerFunc: () => void
@@ -1031,5 +1034,10 @@ export interface StripeTerminalInterface {
   addListener(
     eventName: string,
     listenerFunc: Function
+  ): Promise<PluginListenerHandle> & PluginListenerHandle
+
+  addListener(
+    eventName: 'didCancelDiscoverReaders',
+    listenerFunc: (data: null) => void
   ): Promise<PluginListenerHandle> & PluginListenerHandle
 }

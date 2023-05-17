@@ -1,6 +1,7 @@
 import { Capacitor, PluginListenerHandle } from '@capacitor/core'
 import { Observable } from 'rxjs'
 import { transform, isObject, isArray, snakeCase } from 'lodash'
+import { Stripe } from 'stripe'
 
 import {
   StripeTerminalInterface,
@@ -31,6 +32,18 @@ import {
 
 import { StripeTerminal } from './plugin-registration'
 import { StripeTerminalWeb } from './web'
+
+export class StripeTerminalError extends Error {
+  /**
+   * For card errors resulting from a card issuer decline, a short string indicating the [card issuer’s reason for the decline](https://stripe.com/docs/declines#issuer-declines) if they provide one.
+   */
+  decline_code?: string
+
+  /**
+   * The `PaymentIntent` object for errors returned on a request involving a `PaymentIntent`.
+   */
+  payment_intent?: Stripe.PaymentIntent
+}
 
 export class StripeTerminalPlugin {
   public isInitialized = false
@@ -373,15 +386,10 @@ export class StripeTerminalPlugin {
     })
   }
 
-  private parseJson(json: string, name: string): any {
-    try {
-      const jsonObj = JSON.parse(json)
+  private parseJson(json: string): any {
+    const jsonObj = JSON.parse(json)
 
-      return this.snakeCaseRecursively(jsonObj)
-    } catch (err) {
-      console.error(`Error parsing ${name} JSON`, err)
-      return null
-    }
+    return this.snakeCaseRecursively(jsonObj)
   }
 
   private normalizePaymentIntent(paymentIntent: any): PaymentIntent | null {
@@ -391,26 +399,21 @@ export class StripeTerminalPlugin {
       paymentIntent.amountDetails &&
       typeof paymentIntent.amountDetails === 'string'
     ) {
-      paymentIntent.amountDetails = this.parseJson(
-        paymentIntent.amountDetails,
-        'PaymentIntent.amountDetails'
-      )
+      paymentIntent.amountDetails = this.parseJson(paymentIntent.amountDetails)
     }
 
     if (
       paymentIntent.paymentMethod &&
-      typeof paymentIntent.paymentMethod === 'string'
+      typeof paymentIntent.paymentMethod === 'string' &&
+      !paymentIntent.paymentMethod.startsWith('pm_') // if its just the ID, return the ID
     ) {
-      paymentIntent.paymentMethod = this.parseJson(
-        paymentIntent.paymentMethod,
-        'PaymentIntent.paymentMethod'
-      )
+      paymentIntent.paymentMethod = this.parseJson(paymentIntent.paymentMethod)
     }
 
     if (paymentIntent.charges) {
       paymentIntent.charges = paymentIntent.charges.map((charge: any) => {
         if (typeof charge === 'string') {
-          return this.parseJson(charge, 'PaymentIntent.charges')
+          return this.parseJson(charge)
         }
 
         return charge
@@ -823,13 +826,25 @@ export class StripeTerminalPlugin {
   }
 
   public async processPayment(): Promise<PaymentIntent | null> {
-    this.ensureInitialized()
+    try {
+      this.ensureInitialized()
 
-    const data = await this.sdk.processPayment()
+      const data = await this.sdk.processPayment()
 
-    const pi = this.objectExists(data?.intent)
+      const pi = this.objectExists(data?.intent)
 
-    return this.normalizePaymentIntent(pi)
+      return this.normalizePaymentIntent(pi)
+    } catch (err: any) {
+      if (!err?.message || !err?.data) {
+        throw err
+      }
+
+      const stripeError = new StripeTerminalError(err.message)
+      stripeError.decline_code = err.data.decline_code
+      stripeError.payment_intent = err.data.payment_intent
+
+      throw stripeError
+    }
   }
 
   public async clearCachedCredentials(): Promise<void> {
@@ -999,6 +1014,10 @@ export class StripeTerminalPlugin {
 
   public static async requestPermissions(): Promise<PermissionStatus> {
     return await StripeTerminal.requestPermissions()
+  }
+
+  public static async tapToPaySupported(): Promise<boolean> {
+    return await StripeTerminal.tapToPaySupported()
   }
 
   /**
