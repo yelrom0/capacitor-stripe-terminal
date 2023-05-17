@@ -11,7 +11,8 @@
     "prepublishOnly": "npm run build",
     "prepare": "husky install",
     "pre-commit": "pretty-quick --staged",
-    "docs": "typedoc --excludeExternals --out out src/index.ts"
+    "docs": "typedoc --excludeExternals --out out src/index.ts",
+    "semantic-release": "semantic-release"
   },
   "author": "eventOne Labs <opensource@event1.io>",
   "license": "MIT",
@@ -56,10 +57,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/eventOneHQ/capacitor-stripe-terminal"
+    "url": "https://github.com/yelrom0/capacitor-stripe-terminal"
   },
   "bugs": {
-    "url": "https://github.com/eventOneHQ/capacitor-stripe-terminal/issues"
+    "url": "https://github.com/yelrom0/capacitor-stripe-terminal/issues"
   },
   "release": {
     "branches": [
