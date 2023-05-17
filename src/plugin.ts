@@ -185,18 +185,21 @@ export class StripeTerminalPlugin {
         options.includes('Tap') &&
         options.includes('Insert')
       ) {
+        // @ts-ignore
         return 7
       } else if (
         !options.includes('Swipe') &&
         options.includes('Tap') &&
         options.includes('Insert')
       ) {
+        // @ts-ignore
         return 6
       } else if (
         options.includes('Swipe') &&
         options.includes('Tap') &&
         !options.includes('Insert')
       ) {
+        // @ts-ignore
         return 5
       } else if (
         !options.includes('Swipe') &&
@@ -209,6 +212,7 @@ export class StripeTerminalPlugin {
         !options.includes('Tap') &&
         options.includes('Insert')
       ) {
+        // @ts-ignore
         return 3
       } else if (
         !options.includes('Swipe') &&
